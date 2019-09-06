@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>iTunes API Tutorial</title>
+    <link rel="shortcut icon" href="http://findicons.com/files/icons/2770/ios_7_icons/512/music.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/amplitudejs@v5.0.2/dist/amplitude.js"></script>
+    <style>
+        .amplitude-playing {
+            background-color: rgba(242, 242, 242, 0.5);
+        }
+
+        .amplitude-paused i {
+            display: none;
+        }
+
+       marquee{
+           font-size:25px;
+       }
+       marquee span{
+           margin-right:10%
+       }
+       
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div class="nav-wrapper">
+            <form>
+                <div class="input-field">
+                    <input id="search" type="search" required>
+                    <label class="label-icon" for="search"><i class="material-icons">search</i></label>
+                    <i class="material-icons">close</i>
+                </div>
+            </form>
+        </div>
+    </nav>
+    <!-- <div class="ticker-wrap">
+        <div class="ticker">
+            <div data-amplitude-song-info="name" class="ticker__item song-name">Use the search bar to find new music!</div>
+            <div data-amplitude-song-info="artist" class="ticker__item">
+            </div>
+            <div data-amplitude-song-info="album" class="ticker__item"></div>
+
+        </div>
+    </div> -->
+
+    <marquee behavior="scroll" direction="left">
+
+        <span data-amplitude-song-info="name" class="ticker__item song-name">Use the search bar to find new
+            music!</span>
+        <span data-amplitude-song-info="artist" class="ticker__item">
+        </span>
+        <span data-amplitude-song-info="album" class="ticker__item"></span>
+    </marquee>
+
+    ​<div class="container">
+
+
+
+
+
+
+
+
+        <table class="highlight">
+            <thead>
+                <tr>
+                    <th>Art</th>
+                    <th>Track</th>
+                    <th>Artist</th>
+                    <th>Album</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+
+            <tbody id="songs">
+
+
+            </tbody>
+        </table>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+        integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        $("form").submit(function (event) {
+            // AJAX IS GETTING DATA FROM ITUNES
+            event.preventDefault();
+
+            $.ajax({
+                url: "https://itunes.apple.com/search?term=" + $("#search").val(),
+                dataType: 'JSONP'
+            })
+                .done(function (data) {
+                    console.log(data);
+                    var songs = []
+                    // add code for when response from apple comes back.
+                    $('#songs').html("")
+                    for (var i = 0; i < data.results.length; i++) {
+                        if (data.results[i].trackName) {
+                            // MAKE THIS SONG LIST BETTER
+                            $('#songs').append(`
+                            <tr class="amplitude-play-pause" data-amplitude-song-index="${i}">
+                                <td>
+                                    <img src="${data.results[i].artworkUrl30}">
+                                </td>
+                                <td>${data.results[i].trackName} <i class="material-icons">play_circle_outline</i></td>
+                                <td>${data.results[i].artistName}</td>
+                                <td>${data.results[i].collectionName}</td>
+                                <td>${data.results[i].trackPrice}</td>
+                            </tr>`)
+                            songs.push({
+                                "name": data.results[i].trackName,
+                                "artist": data.results[i].artistName,
+                                "album": data.results[i].collectionName,
+                                "url": data.results[i].previewUrl,
+                                "cover_art_url": data.results[i].artworkUrl100
+                            })
+                        }
+                    }
+                    Amplitude.init({
+                        "songs": songs
+                    })
+                })
+                .fail(function (data) {
+                    console.log(data);
+                    $('#songs').append(data.status);
+                })
+
+            $("form")[0].reset();
+            $("input").blur()
+        });// End of on ready part
+    </script>
+</body>
+​
+
+</html>
